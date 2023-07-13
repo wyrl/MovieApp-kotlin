@@ -18,6 +18,8 @@ class MovieRepository(application: Application) {
     private val db: MovieDatabase?
     private val context: Context
 
+
+
     init {
         context = application.applicationContext
         movies = MutableLiveData(ArrayList())
@@ -74,8 +76,8 @@ class MovieRepository(application: Application) {
         db?.movieDao()?.insert(movie)
     }
 
-    suspend fun addMovie(movieInfo: MovieInfo) : MovieInfo? {
-        val result = RetrofitInstance.api.addMovie(movieInfo);
+    suspend fun addMovie(movieInfo: MovieInfo, authorization: String) : MovieInfo? {
+        val result = RetrofitInstance.api.addMovie(movieInfo, authorization);
 
         if(result.isSuccessful){
             val movieInfo: MovieInfo? = result.body();
@@ -94,7 +96,7 @@ class MovieRepository(application: Application) {
             return movieInfo
         }
         else{
-            throw Exception("Failure: addMovie ->" + result.message())
+            throw Exception(result.message())
         }
 
     }

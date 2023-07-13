@@ -10,6 +10,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.bumptech.glide.Glide
 import com.example.movieapp.R
 import com.example.movieapp.data.model.Movie
@@ -23,6 +25,9 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
     private lateinit var binding : ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var adapter: MoviesAdapter
+
+    private lateinit var sharedPreferences: EncryptedSharedPreferences;
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate")
         super.onCreate(savedInstanceState)
@@ -32,6 +37,16 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         binding.lifecycleOwner = this
         binding.appBarLayout.btnAdd.setOnClickListener(this)
         setupRecyclerAdapter()
+
+        sharedPreferences = EncryptedSharedPreferences.create(
+            "preferences",
+            MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+            applicationContext,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        ) as EncryptedSharedPreferences
+
+        sharedPreferences.edit().putString("authorization", "dGVzdDpzZWNyZXQ=").apply()
     }
 
     private fun setupRecyclerAdapter() {

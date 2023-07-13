@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Movie App</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="movie_image_desc">Movie Image</string>
+    <string name="sample_title">Title</string>
+    <string name="sample_year_released">Year Released</string>
+    <string name="error_msg_empty">Please input %s</string>
+    <string name="ratings">Ratings: %s</string>
+</resources>

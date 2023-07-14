@@ -1,4 +1,4 @@
-package com.example.movieapp.service
+package com.example.movieapp.data.service
 
 import com.example.movieapp.data.model.MovieInfo
 import retrofit2.Response

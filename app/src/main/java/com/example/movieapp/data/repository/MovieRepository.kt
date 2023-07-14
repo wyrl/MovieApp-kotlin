@@ -1,4 +1,4 @@
-package com.example.movieapp.repository
+package com.example.movieapp.data.repository
 
 import android.app.Application
 import android.content.Context
@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.movieapp.data.database.MovieDatabase
 import com.example.movieapp.data.model.Movie
 import com.example.movieapp.data.model.MovieInfo
-import com.example.movieapp.service.RetrofitInstance
+import com.example.movieapp.data.service.RetrofitInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -45,11 +45,11 @@ class MovieRepository(application: Application) {
 
     private fun fetchFromAPI() = runBlocking {
         Log.d(TAG, "fetchFromAPI")
-        try {
-            val response = RetrofitInstance.api.getMovies();
+        //try {
+            val response = RetrofitInstance.api.getMovies()
 
             if(response.isSuccessful){
-                val movieList: List<Movie>? = response.body()?.let { Movie.convertFrom(it) };
+                val movieList: List<Movie>? = response.body()?.let { Movie.convertFrom(it) }
                 movieList?.let {
                     saveIntoDatabase(it)
                     movies.postValue(movieList)
@@ -58,10 +58,10 @@ class MovieRepository(application: Application) {
             } else {
                 Log.e("MovieRepository", "onReponse --> failure")
             }
-        }
-        catch (Ex: Exception){
-            Log.e(TAG, "Failure: fetchFromAPI -> " + Ex.message);
-        }
+        //}
+//        catch (Ex: IOException){
+//            Log.e(TAG, "Failure: fetchFromAPI -> " + Ex.message);
+//        }
     }
 
     private fun saveIntoDatabase(movieList: List<Movie>) {
@@ -77,23 +77,23 @@ class MovieRepository(application: Application) {
     }
 
     suspend fun addMovie(movieInfo: MovieInfo, authorization: String) : MovieInfo? {
-        val result = RetrofitInstance.api.addMovie(movieInfo, authorization);
+        val result = RetrofitInstance.api.addMovie(movieInfo, authorization)
 
         if(result.isSuccessful){
-            val movieInfo: MovieInfo? = result.body();
-            if(movieInfo != null){
+            val info: MovieInfo? = result.body()
+            if(info != null){
                 insertMovie(
                     Movie(
-                        movieInfo.title,
-                        movieInfo.plot,
-                        movieInfo.released,
-                        movieInfo.imdbRating,
-                        movieInfo.images[0],
-                        movieInfo.images[0]
+                        info.title,
+                        info.plot,
+                        info.released,
+                        info.imdbRating,
+                        info.images[0],
+                        info.images[0]
                     )
                 )
             }
-            return movieInfo
+            return info
         }
         else{
             throw Exception(result.message())

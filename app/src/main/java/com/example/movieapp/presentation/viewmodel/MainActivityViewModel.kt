@@ -6,17 +6,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.movieapp.data.model.Movie
-import com.example.movieapp.repository.MovieRepository
+import com.example.movieapp.data.repository.MovieRepository
 import kotlinx.coroutines.launch
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: MovieRepository
-    private val movieList: MutableLiveData<List<Movie>>
     private val _selectedMovie: MutableLiveData<Movie?>
 
     init {
         repository = MovieRepository(application)
-        movieList = repository.movies
         _selectedMovie = MutableLiveData()
         viewModelScope.launch{
             repository.loadData()
@@ -24,7 +22,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getMovieList(): LiveData<List<Movie>> {
-        return movieList
+        return repository.movies
     }
 
     fun getSelectedMovie(): LiveData<Movie?> {

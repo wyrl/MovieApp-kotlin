@@ -9,13 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
 import com.example.movieapp.R
 import com.example.movieapp.data.model.Movie
+import com.example.movieapp.data.utils.EncryptedDataStore
 import com.example.movieapp.databinding.ActivityAddMovieBinding
 import com.example.movieapp.presentation.viewmodel.AddMovieViewModel
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -24,7 +24,7 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var binding: ActivityAddMovieBinding
     private lateinit var viewModel: AddMovieViewModel
     private var movie: Movie? = null
-    private lateinit var sharedPreferences: EncryptedSharedPreferences;
+    private lateinit var dataStore: EncryptedDataStore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
@@ -36,17 +36,9 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
         binding.btnPickDate.setOnClickListener(this)
         viewModel = ViewModelProvider(this)[AddMovieViewModel::class.java]
 
-        sharedPreferences = EncryptedSharedPreferences.create(
-            "preferences",
-            MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
-            applicationContext,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        ) as EncryptedSharedPreferences
+        dataStore = EncryptedDataStore.getInstance(applicationContext)
 
-        //sharedPreferences.edit().putString("authorization", "dGVzdDpzZWNyZXQ=")
-
-        sharedPreferences.getString("authorization", "")?.let { viewModel.setAuthorization(it) }
+        dataStore.get("authorization", "")?.let { viewModel.setAuthorization(it) }
     }
 
     override fun onClick(view: View) {
@@ -77,14 +69,12 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
                     movie?.movieInfo?.let { viewModel.addMovie(it) }
                     finish()
                 }
+                catch (ex: IOException){
+                    setErrorMessage("Network Failed!")
+                    ex.message?.let { Log.e(TAG, it) }
+                }
                 catch (ex: Exception){
-                    if(ex.message.equals("Unauthorized")){
-                        setErrorMessage("Network Failed: Unauthorized")
-                    }
-                    else{
-                        setErrorMessage("Network Failed!")
-                    }
-
+                    setErrorMessage("Network Failed: " + ex.message)
                     ex.message?.let { Log.e(TAG, it) }
                 }
                 finally {
@@ -130,12 +120,8 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setErrorMessage(errorMessage: String) {
-        binding!!.txtErrMsg.visibility = View.VISIBLE
-        binding!!.txtErrMsg.text = errorMessage
-    }
-
-    private fun clearFields() {
-        movie = null
+        binding.txtErrMsg.visibility = View.VISIBLE
+        binding.txtErrMsg.text = errorMessage
     }
 
     private fun onPickDate() {

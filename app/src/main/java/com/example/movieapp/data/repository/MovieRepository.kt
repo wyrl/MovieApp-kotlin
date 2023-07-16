@@ -28,7 +28,7 @@ class MovieRepository(application: Application) {
 
     suspend fun loadData() = withContext(Dispatchers.IO) {
         Log.d(TAG, "loadData")
-        val movieList = db?.movieDao()?.all //db.movieDao().all
+        val movieList = db?.movieDao()?.all
         if (movieList == null || movieList.isNotEmpty()) {
             Log.d(TAG, "Load from database")
             movies.postValue(movieList)

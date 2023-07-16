@@ -150,10 +150,6 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
         datePickerDialog.show()
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     companion object {
         const val TAG = "AddMovieActivity"
     }

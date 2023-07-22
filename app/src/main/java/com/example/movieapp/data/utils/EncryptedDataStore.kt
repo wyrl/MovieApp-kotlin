@@ -13,12 +13,13 @@ class EncryptedDataStore private constructor(fileName: String, context: Context)
     companion object{
         @Volatile
         private var instance: EncryptedDataStore? = null
+        private const val fileName: String = "preferences"
 
         fun getInstance(context: Context): EncryptedDataStore{
             if(instance == null){
                 synchronized(this){
                     if(instance == null){
-                        instance = EncryptedDataStore("preferences", context)
+                        instance = EncryptedDataStore(fileName, context)
                     }
                 }
             }
@@ -51,6 +52,22 @@ class EncryptedDataStore private constructor(fileName: String, context: Context)
 
     fun get(key: String, defValue: Boolean): Boolean {
         return sharedPref.getBoolean(key, defValue)
+    }
+
+    fun put(key: String, value: Float) {
+        editor.putFloat(key, value).apply()
+    }
+
+    fun get(key: String, defValue: Float): Float {
+        return sharedPref.getFloat(key, defValue)
+    }
+
+    fun put(key: String, value: Int){
+        editor.putInt(key, value).apply()
+    }
+
+    fun get(key: String, defValue: Int): Int{
+        return sharedPref.getInt(key, defValue)
     }
 
 

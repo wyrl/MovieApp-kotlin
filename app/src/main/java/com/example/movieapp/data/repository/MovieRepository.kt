@@ -29,7 +29,7 @@ class MovieRepository(application: Application) {
     suspend fun loadData() = withContext(Dispatchers.IO) {
         Log.d(TAG, "loadData")
         val movieList = db?.movieDao()?.all
-        if (movieList == null || movieList.isNotEmpty()) {
+        if (!movieList.isNullOrEmpty()) {
             Log.d(TAG, "Load from database")
             movies.postValue(movieList)
         } else {
@@ -45,23 +45,18 @@ class MovieRepository(application: Application) {
 
     private fun fetchFromAPI() = runBlocking {
         Log.d(TAG, "fetchFromAPI")
-        //try {
-            val response = RetrofitInstance.api.getMovies()
+        val response = RetrofitInstance.api.getMovies()
 
-            if(response.isSuccessful){
-                val movieList: List<Movie>? = response.body()?.let { Movie.convertFrom(it) }
-                movieList?.let {
-                    saveIntoDatabase(it)
-                    movies.postValue(movieList)
-                }
-
-            } else {
-                Log.e("MovieRepository", "onReponse --> failure")
+        if(response.isSuccessful){
+            val movieList: List<Movie>? = response.body()?.let { Movie.convertFrom(it) }
+            movieList?.let {
+                saveIntoDatabase(it)
+                movies.postValue(movieList)
             }
-        //}
-//        catch (Ex: IOException){
-//            Log.e(TAG, "Failure: fetchFromAPI -> " + Ex.message);
-//        }
+
+        } else {
+            Log.e("MovieRepository", "onReponse --> failure")
+        }
     }
 
     private fun saveIntoDatabase(movieList: List<Movie>) {

@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -32,10 +33,16 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-        binding.viewModel = viewModel
-        binding.lifecycleOwner = this
-        binding.appBarLayout.btnAdd.setOnClickListener(this)
+
+        with(binding){
+            viewModel = viewModel
+            lifecycleOwner= this@MainActivity
+            appBarLayout.btnAdd.setOnClickListener(this@MainActivity)
+        }
+
         setupRecyclerAdapter()
+
+        observer()
 
         dataStore = EncryptedDataStore.getInstance(applicationContext)
         dataStore.put("authorization", "dGVzdDpzZWNyZXQ=")
@@ -45,12 +52,32 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         adapter = MoviesAdapter(this)
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        viewModel.getMovieList().observe(this){
-            Log.d(TAG, "SetupRecyclerAdapter observer -> movie list count: " + it.size)
-            if (it.isNotEmpty() && viewModel.getSelectedMovie().value == null) { // Default Selected first item
-                viewModel.updateSelectedMovie(it[0])
+        viewModel.getMovieList().observe(this){movies ->
+            Log.d(TAG, "SetupRecyclerAdapter observer -> movie list count: " + movies.size)
+            setDefaultIfNotSelectedItem()
+            adapter.setMovieList(movies)
+        }
+    }
+
+    private fun observer(){
+        viewModel.apiResponse().observe(this){ apiResponse ->
+            if(!apiResponse.isSuccess){
+                val alertDialogBuilder = AlertDialog.Builder(this)
+                alertDialogBuilder.setTitle("Network Failed!")
+                alertDialogBuilder.setMessage("Oops! Please ensure that you have a stable internet connection. Once you're connected, feel free to try again")
+
+                alertDialogBuilder.setPositiveButton("OK"){dialog, _ ->
+                    dialog.dismiss()
+                }
+
+                alertDialogBuilder.create().show()
             }
-            adapter.setMovieList(it)
+        }
+    }
+
+    private fun setDefaultIfNotSelectedItem(){
+        if (!viewModel.hasSelectedMovie()) { // Default Selected first item
+            viewModel.updateSelectedMovie(viewModel.getFirstMovieItem())
         }
     }
 

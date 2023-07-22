@@ -9,7 +9,8 @@ import com.example.movieapp.BR
 import java.io.Serializable
 
 @Entity
-class Movie : BaseObservable, Serializable {
+open class Movie : BaseObservable, Serializable {
+
     @PrimaryKey(autoGenerate = true)
     var id = 0
 
@@ -114,6 +115,7 @@ class Movie : BaseObservable, Serializable {
                     )
                 )
             }
+
             return movies
         }
     }

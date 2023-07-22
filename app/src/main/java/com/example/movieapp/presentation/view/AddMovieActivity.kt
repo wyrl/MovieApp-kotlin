@@ -10,7 +10,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.movieapp.R
+import com.example.movieapp.data.utils.EncryptedMovie
 import com.example.movieapp.data.model.Movie
+import com.example.movieapp.data.utils.DecryptedMovie
 import com.example.movieapp.data.utils.EncryptedDataStore
 import com.example.movieapp.databinding.ActivityAddMovieBinding
 import com.example.movieapp.presentation.viewmodel.AddMovieViewModel
@@ -62,22 +64,33 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun onAddMovieClick() {
         Log.d(TAG, "Movie: " + movie.toString())
-        showProgress(true)
         if (checkValid()) {
+            showProgress(true)
             lifecycleScope.launch {
                 try {
-                    movie?.movieInfo?.let { viewModel.addMovie(it) }
+                    /*movie?.movieInfo?.let {
+                        viewModel.addMovie(it)
+                    }*/
+                    movie?.let {
+                        val key = "secret"
+                        val encryptedMovie =
+                            EncryptedMovie(key, it)
+
+                        val decryptedMovie =
+                            DecryptedMovie(key, encryptedMovie)
+
+                        viewModel.addMovie(decryptedMovie.movieInfo)
+                    }
+
+
                     finish()
-                }
-                catch (ex: IOException){
+                } catch (ex: IOException) {
                     setErrorMessage("Network Failed!")
                     ex.message?.let { Log.e(TAG, it) }
-                }
-                catch (ex: Exception){
+                } catch (ex: Exception) {
                     setErrorMessage("Network Failed: " + ex.message)
                     ex.message?.let { Log.e(TAG, it) }
-                }
-                finally {
+                } finally {
                     showProgress(false)
                 }
             }
@@ -85,7 +98,7 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun showProgress(show: Boolean){
+    private fun showProgress(show: Boolean) {
         binding.btnAddMovie.visibility = if (!show) View.VISIBLE else View.GONE
         binding.loadingLayout.visibility = if (show) View.VISIBLE else View.GONE
     }

@@ -22,7 +22,7 @@ import com.example.movieapp.presentation.viewmodel.MainActivityViewModel
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var adapter: MoviesAdapter
 
@@ -34,9 +34,9 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
 
-        with(binding){
+        with(binding) {
             viewModel = viewModel
-            lifecycleOwner= this@MainActivity
+            lifecycleOwner = this@MainActivity
             appBarLayout.btnAdd.setOnClickListener(this@MainActivity)
         }
 
@@ -52,21 +52,21 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         adapter = MoviesAdapter(this)
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        viewModel.getMovieList().observe(this){movies ->
+        viewModel.getMovieList().observe(this) { movies ->
             Log.d(TAG, "SetupRecyclerAdapter observer -> movie list count: " + movies.size)
             setDefaultIfNotSelectedItem()
             adapter.setMovieList(movies)
         }
     }
 
-    private fun observer(){
-        viewModel.apiResponse().observe(this){ apiResponse ->
-            if(!apiResponse.isSuccess){
+    private fun observer() {
+        viewModel.apiResponse().observe(this) { apiResponse ->
+            if (!apiResponse.isSuccess) {
                 val alertDialogBuilder = AlertDialog.Builder(this)
                 alertDialogBuilder.setTitle("Network Failed!")
-                alertDialogBuilder.setMessage("Oops! Please ensure that you have a stable internet connection. Once you're connected, feel free to try again")
+                alertDialogBuilder.setMessage("Oops! It seems the local server is not running yet.")
 
-                alertDialogBuilder.setPositiveButton("OK"){dialog, _ ->
+                alertDialogBuilder.setPositiveButton("OK") { dialog, _ ->
                     dialog.dismiss()
                 }
 
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         }
     }
 
-    private fun setDefaultIfNotSelectedItem(){
+    private fun setDefaultIfNotSelectedItem() {
         if (!viewModel.hasSelectedMovie()) { // Default Selected first item
             viewModel.updateSelectedMovie(viewModel.getFirstMovieItem())
         }

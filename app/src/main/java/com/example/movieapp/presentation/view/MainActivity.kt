@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.movieapp.R
 import com.example.movieapp.data.model.Movie
-import com.example.movieapp.data.utils.CryptoUtil
 import com.example.movieapp.data.utils.EncryptedDataStore
 import com.example.movieapp.databinding.ActivityMainBinding
 import com.example.movieapp.presentation.adapter.MoviesAdapter
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
 
-        Log.d(TAG, "Encrypted: " + CryptoUtil.encrypt("secret", "Testing"))
+
 
         with(binding) {
             viewModel = viewModel

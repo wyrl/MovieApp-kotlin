@@ -6,10 +6,10 @@ class DecryptedMovie(private val key: String, private val movie: Movie) : Movie(
 
 
     init {
-        doEncrypt()
+        doDecrypt()
     }
 
-    private fun doEncrypt() {
+    private fun doDecrypt() {
         val movie = this.movie
         title = CryptoUtil.decrypt(key, movie.title)
         description = CryptoUtil.decrypt(key, movie.description)

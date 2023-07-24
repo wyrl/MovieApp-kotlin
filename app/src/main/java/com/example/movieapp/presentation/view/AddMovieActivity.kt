@@ -10,12 +10,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.movieapp.R
-import com.example.movieapp.data.utils.EncryptedMovie
+import com.example.movieapp.data.model.DecryptedMovie
+import com.example.movieapp.data.model.EncryptedMovie
 import com.example.movieapp.data.model.Movie
-import com.example.movieapp.data.utils.DecryptedMovie
 import com.example.movieapp.data.utils.EncryptedDataStore
 import com.example.movieapp.databinding.ActivityAddMovieBinding
 import com.example.movieapp.presentation.viewmodel.AddMovieViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.ParseException
@@ -72,14 +73,22 @@ class AddMovieActivity : AppCompatActivity(), View.OnClickListener {
                         viewModel.addMovie(it)
                     }*/
                     movie?.let {
+                        val gson = Gson()
+                        val jsonString = gson.toJson(it.movieInfo)
+
                         val key = "secret"
-                        val encryptedMovie =
-                            EncryptedMovie(key, it)
+
+                        Log.d(TAG, "Movie Info Json: $jsonString")
+
+                        val encryptedMovie = EncryptedMovie(key, it.movieInfo)
+
+                        Log.d(TAG, "Movie Info encrypted: ${encryptedMovie.getEncryptedData()}")
 
                         val decryptedMovie =
-                            DecryptedMovie(key, encryptedMovie)
+                            DecryptedMovie(key, encryptedMovie.getEncryptedData())
 
-                        viewModel.addMovie(decryptedMovie.movieInfo)
+
+                        viewModel.addMovie(decryptedMovie.getDecryptedMovieInfo())
                     }
 
 

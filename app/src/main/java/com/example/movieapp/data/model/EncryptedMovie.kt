@@ -6,10 +6,9 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 class EncryptedMovie(
-    @field:Expose
-    @field:SerializedName("key")
-        private val key: String,
-    private val movieInfo: MovieInfo) {
+    @Transient
+    private val movieInfo: MovieInfo
+) {
 
     @Expose
     @SerializedName("encryptedMovie")
@@ -19,14 +18,14 @@ class EncryptedMovie(
         doEncrypt()
     }
 
-    private fun doEncrypt(){
+    private fun doEncrypt() {
         val gson = Gson()
         val jsonString = gson.toJson(movieInfo)
 
-        _encryptedData = CryptoUtil.encrypt(key, jsonString)
+        _encryptedData = CryptoUtil.encrypt(jsonString)
     }
 
-    fun getEncryptedData(): String{
+    fun getEncryptedData(): String {
         return _encryptedData
     }
 }

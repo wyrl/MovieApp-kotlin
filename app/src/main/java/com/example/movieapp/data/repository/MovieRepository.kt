@@ -5,6 +5,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.movieapp.data.database.MovieDatabase
+import com.example.movieapp.data.model.DecryptedMovie
+import com.example.movieapp.data.model.EncryptedMovie
 import com.example.movieapp.data.model.Movie
 import com.example.movieapp.data.model.MovieInfo
 import com.example.movieapp.data.service.RetrofitInstance
@@ -17,7 +19,6 @@ class MovieRepository(application: Application) {
     val movies: MutableLiveData<List<Movie>>
     private val db: MovieDatabase?
     private val context: Context
-
 
 
     init {
@@ -47,7 +48,7 @@ class MovieRepository(application: Application) {
         Log.d(TAG, "fetchFromAPI")
         val response = RetrofitInstance.api.getMovies()
 
-        if(response.isSuccessful){
+        if (response.isSuccessful) {
             val movieList: List<Movie>? = response.body()?.let { Movie.convertFrom(it) }
             movieList?.let {
                 saveIntoDatabase(it)
@@ -71,12 +72,12 @@ class MovieRepository(application: Application) {
         db?.movieDao()?.insert(movie)
     }
 
-    suspend fun addMovie(movieInfo: MovieInfo, authorization: String) : MovieInfo? {
+    suspend fun addMovie(movieInfo: MovieInfo, authorization: String): MovieInfo? {
         val result = RetrofitInstance.api.addMovie(movieInfo, authorization)
 
-        if(result.isSuccessful){
+        if (result.isSuccessful) {
             val info: MovieInfo? = result.body()
-            if(info != null){
+            if (info != null) {
                 insertMovie(
                     Movie(
                         info.title,
@@ -89,10 +90,40 @@ class MovieRepository(application: Application) {
                 )
             }
             return info
-        }
-        else{
+        } else {
             throw Exception(result.message())
         }
 
+    }
+
+    suspend fun addEncryptedMovie(
+        encryptedMovie: EncryptedMovie,
+        authorization: String
+    ): MovieInfo? {
+        val result = RetrofitInstance.api.addEncryptedMovie(encryptedMovie, authorization)
+
+        if (result.isSuccessful) {
+            val eMovie: EncryptedMovie? = result.body()
+
+            if (eMovie != null) {
+                val decryptedMovie = DecryptedMovie(eMovie.getEncryptedData())
+                val info: MovieInfo = decryptedMovie.getDecryptedMovieInfo()
+                insertMovie(
+                    Movie(
+                        info.title,
+                        info.plot,
+                        info.released,
+                        info.imdbRating,
+                        info.images[0],
+                        info.images[0]
+                    )
+                )
+
+                return info
+            }
+            return null
+        } else {
+            throw Exception(result.message())
+        }
     }
 }

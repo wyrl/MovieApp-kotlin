@@ -1,6 +1,7 @@
 package com.example.movieapp.presentation.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -27,6 +28,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             }
             catch (ex: IOException){
                 _apiResponse.postValue(ApiResponse(false, "Network Failed!"))
+                Log.e("MainActivityViewModel", ex.message ?: "")
             }
         }
     }

@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
 
                 alertDialogBuilder.setPositiveButton("OK") { dialog, _ ->
                     dialog.dismiss()
+                    finishAffinity()
                 }
 
                 alertDialogBuilder.create().show()

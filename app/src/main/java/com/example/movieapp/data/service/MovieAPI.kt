@@ -1,5 +1,6 @@
 package com.example.movieapp.data.service
 
+import com.example.movieapp.data.model.EncryptedMovie
 import com.example.movieapp.data.model.MovieInfo
 import retrofit2.Response
 import retrofit2.http.Body
@@ -13,4 +14,7 @@ interface MovieAPI {
 
     @POST("/add-movie")
     suspend fun addMovie(@Body movieInfo: MovieInfo, @Header("Authorization") authorization: String): Response<MovieInfo>
+
+    @POST("/add-movie")
+    suspend fun addEncryptedMovie(@Body encryptedMovie: EncryptedMovie, @Header("Authorization") authorization: String): Response<EncryptedMovie>
 }

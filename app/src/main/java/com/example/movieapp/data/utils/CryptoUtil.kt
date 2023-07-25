@@ -5,17 +5,13 @@ import android.security.keystore.KeyProperties
 import android.util.Base64
 import com.example.movieapp.BuildConfig
 import java.security.KeyStore
-import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 class CryptoUtil {
     companion object {
-        private const val AES_KEY_SIZE = 256
-
         private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
         private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
         private const val PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
@@ -37,14 +33,15 @@ class CryptoUtil {
             cipher.init(Cipher.ENCRYPT_MODE, getKey())
             val encryptedData = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
             val iv = cipher.iv
-            val base64Combined = Base64.encodeToString(encryptedData, Base64.NO_WRAP) + "\n" + Base64.encodeToString(iv, Base64.NO_WRAP)
-            return base64Combined
+            return Base64.encodeToString(
+                encryptedData,
+                Base64.NO_WRAP
+            ) + "\n" + Base64.encodeToString(iv, Base64.NO_WRAP)
         }
 
         fun decrypt(encryptedData: String): String {
             val base64Arr = encryptedData.split("\n")
-            val cipherBase64 = base64Arr[0]
-            val ivBase64 = base64Arr[1]
+            val (ivBase64, cipherBase64) = base64Arr
 
             val iv = IvParameterSpec(Base64.decode(ivBase64, Base64.NO_WRAP))
             val cipherData = Base64.decode(cipherBase64, Base64.NO_WRAP)
@@ -57,9 +54,6 @@ class CryptoUtil {
         }
 
         private fun generateAESKey(): SecretKey {
-            /*val keyBytes = keyString.toByteArray(Charsets.UTF_8)
-            return SecretKeySpec(getValidKeyBytes(keyBytes), ALGORITHM)*/
-
             return KeyGenerator.getInstance(ALGORITHM).apply {
                 init(
                     KeyGenParameterSpec.Builder(
@@ -74,10 +68,5 @@ class CryptoUtil {
                 )
             }.generateKey()
         }
-
-        /*private fun getValidKeyBytes(key: ByteArray): ByteArray {
-            val messageDigest = MessageDigest.getInstance("SHA-256")
-            return messageDigest.digest(key).copyOf(AES_KEY_SIZE / 8)
-        }*/
     }
 }

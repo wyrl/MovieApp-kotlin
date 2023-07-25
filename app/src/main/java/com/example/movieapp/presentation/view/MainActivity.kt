@@ -31,10 +31,9 @@ class MainActivity : AppCompatActivity(), ClickHandlers, View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate")
         super.onCreate(savedInstanceState)
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-
-
 
         with(binding) {
             viewModel = viewModel

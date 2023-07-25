@@ -1,10 +1,13 @@
 package com.example.movieapp.data.utils
 
+import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import com.example.movieapp.BuildConfig
+import java.security.KeyStore
 import java.security.MessageDigest
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
@@ -13,25 +16,24 @@ class CryptoUtil {
         private const val AES_KEY_SIZE = 256
 
         private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
-        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_ECB
-        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
+        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM
+        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
         private const val TRANSFORMATION = "$ALGORITHM/$BLOCK_MODE/$PADDING"
 
         private const val keyString: String = BuildConfig.SECRET_KEY
 
-
-        /*private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+        private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
-        }*/
+        }
 
-        /*private fun getKey(): SecretKey {
+        private fun getKey(): SecretKey {
             val existingKey = keyStore.getEntry(keyString, null) as? KeyStore.SecretKeyEntry
             return existingKey?.secretKey ?: generateAESKey()
-        }*/
+        }
 
         fun encrypt(input: String): String {
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.ENCRYPT_MODE, generateAESKey())
+            cipher.init(Cipher.ENCRYPT_MODE, getKey())
             val encryptedData = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
             return Base64.encodeToString(encryptedData, Base64.NO_WRAP)
         }
@@ -39,16 +41,16 @@ class CryptoUtil {
         fun decrypt(encryptedData: String): String {
             val decodedData = Base64.decode(encryptedData, Base64.NO_WRAP)
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.DECRYPT_MODE, generateAESKey())
+            cipher.init(Cipher.DECRYPT_MODE, getKey())
             val decryptedData = cipher.doFinal(decodedData)
             return decryptedData.toString(Charsets.UTF_8)
         }
 
         private fun generateAESKey(): SecretKey {
-            val keyBytes = keyString.toByteArray(Charsets.UTF_8)
-            return SecretKeySpec(getValidKeyBytes(keyBytes), ALGORITHM)
+            /*val keyBytes = keyString.toByteArray(Charsets.UTF_8)
+            return SecretKeySpec(getValidKeyBytes(keyBytes), ALGORITHM)*/
 
-            /*return KeyGenerator.getInstance(ALGORITHM).apply {
+            return KeyGenerator.getInstance(ALGORITHM).apply {
                 init(
                     KeyGenParameterSpec.Builder(
                         keyString,
@@ -60,12 +62,12 @@ class CryptoUtil {
                         .setRandomizedEncryptionRequired(true)
                         .build()
                 )
-            }.generateKey()*/
+            }.generateKey()
         }
 
-        private fun getValidKeyBytes(key: ByteArray): ByteArray {
+        /*private fun getValidKeyBytes(key: ByteArray): ByteArray {
             val messageDigest = MessageDigest.getInstance("SHA-256")
             return messageDigest.digest(key).copyOf(AES_KEY_SIZE / 8)
-        }
+        }*/
     }
 }

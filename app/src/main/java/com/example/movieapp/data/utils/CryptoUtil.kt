@@ -9,6 +9,7 @@ import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class CryptoUtil {
@@ -16,8 +17,8 @@ class CryptoUtil {
         private const val AES_KEY_SIZE = 256
 
         private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
-        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM
-        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
+        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
+        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
         private const val TRANSFORMATION = "$ALGORITHM/$BLOCK_MODE/$PADDING"
 
         private const val keyString: String = BuildConfig.SECRET_KEY
@@ -35,14 +36,19 @@ class CryptoUtil {
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, getKey())
             val encryptedData = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
+            val iv = cipher.iv
+            val combinedData = ByteArray(iv.size + encryptedData.size)
+            System.arraycopy(iv, 0, combinedData, 0, iv.size)
+            System.arraycopy(encryptedData, 0, combinedData, iv.size, encryptedData.size)
             return Base64.encodeToString(encryptedData, Base64.NO_WRAP)
         }
 
         fun decrypt(encryptedData: String): String {
             val decodedData = Base64.decode(encryptedData, Base64.NO_WRAP)
+            val iv = IvParameterSpec(decodedData.copyOfRange(0, 16))
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.DECRYPT_MODE, getKey())
-            val decryptedData = cipher.doFinal(decodedData)
+            cipher.init(Cipher.DECRYPT_MODE, getKey(), iv)
+            val decryptedData = cipher.doFinal(decodedData.copyOfRange(16, decodedData.size))
             return decryptedData.toString(Charsets.UTF_8)
         }
 

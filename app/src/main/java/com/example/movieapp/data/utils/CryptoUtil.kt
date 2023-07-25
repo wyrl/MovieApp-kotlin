@@ -37,18 +37,22 @@ class CryptoUtil {
             cipher.init(Cipher.ENCRYPT_MODE, getKey())
             val encryptedData = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
             val iv = cipher.iv
-            val combinedData = ByteArray(iv.size + encryptedData.size)
-            System.arraycopy(iv, 0, combinedData, 0, iv.size)
-            System.arraycopy(encryptedData, 0, combinedData, iv.size, encryptedData.size)
-            return Base64.encodeToString(encryptedData, Base64.NO_WRAP)
+            val base64Combined = Base64.encodeToString(encryptedData, Base64.NO_WRAP) + "\n" + Base64.encodeToString(iv, Base64.NO_WRAP)
+            return base64Combined
         }
 
         fun decrypt(encryptedData: String): String {
-            val decodedData = Base64.decode(encryptedData, Base64.NO_WRAP)
-            val iv = IvParameterSpec(decodedData.copyOfRange(0, 16))
+            val base64Arr = encryptedData.split("\n")
+            val cipherBase64 = base64Arr[0]
+            val ivBase64 = base64Arr[1]
+
+            val iv = IvParameterSpec(Base64.decode(ivBase64, Base64.NO_WRAP))
+            val cipherData = Base64.decode(cipherBase64, Base64.NO_WRAP)
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, getKey(), iv)
-            val decryptedData = cipher.doFinal(decodedData.copyOfRange(16, decodedData.size))
+            val decryptedData = cipher.doFinal(cipherData)
+
+
             return decryptedData.toString(Charsets.UTF_8)
         }
 
